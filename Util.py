@@ -103,6 +103,7 @@ def gradb(t, y):
 	return (t - y).sum(axis=0)
 
 
+
 def y2indicator(y):
 	N = len(y)
 	y = y.astype(np.int32)

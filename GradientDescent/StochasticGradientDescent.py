@@ -12,7 +12,7 @@ from datetime import datetime
 from Util import forward, error_rate, cost, gradW, gradb, y2indicator, MNIST
 
 def main():
-	X, Y, _, _ = MNIST().get_transformed_data(up_one_level=False)
+	X, Y, _, _ = MNIST().get_transformed_data(up_one_level=True)
 	X = X[:, :300]
 
 	# normalize X first
