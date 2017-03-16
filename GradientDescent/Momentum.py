@@ -44,18 +44,18 @@ def main():
 		for j in range(n_batches):
 			Xbatch = Xtrain[j * batch_sz:(j * batch_sz + batch_sz), ]
 			Ybatch = Ytrain_ind[j * batch_sz:(j * batch_sz + batch_sz), ]
-			pYbatch, Z = forward(Xbatch, W1, b1, W2, b2)
+			pYbatch, Z = forward(Xbatch, W1, b1, W2, b2, use_rectifier=False)
 			# print "first batch cost:", cost(pYbatch, Ybatch)
 
 			# updates
 			W2 -= lr * (derivative_w2(Z, Ybatch, pYbatch) + reg * W2)
 			b2 -= lr * (derivative_b2(Ybatch, pYbatch) + reg * b2)
-			W1 -= lr * (derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2) + reg * W1)
-			b1 -= lr * (derivative_b1(Z, Ybatch, pYbatch, W2) + reg * b1)
+			W1 -= lr * (derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2, use_rectifier=False) + reg * W1)
+			b1 -= lr * (derivative_b1(Z, Ybatch, pYbatch, W2, use_rectifier=False) + reg * b1)
 
 			if j % print_period == 0:
 				# calculate just for LL
-				pY, _ = forward(Xtest, W1, b1, W2, b2)
+				pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 				# print "pY:", pY
 				ll = cost(pY, Ytest_ind)
 				LL_batch.append(ll)
@@ -65,7 +65,7 @@ def main():
 				CR_batch.append(err)
 				print("Error rate:", err)
 
-		pY, _ = forward(Xtest, W1, b1, W2, b2)
+		pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 		print("Final error rate:", error_rate(pY, Ytest))
 
 
@@ -83,32 +83,30 @@ def main():
 		for j in range(n_batches):
 			Xbatch = Xtrain[j * batch_sz:(j * batch_sz + batch_sz), ]
 			Ybatch = Ytrain_ind[j * batch_sz:(j * batch_sz + batch_sz), ]
-			pYbatch, Z = forward(Xbatch, W1, b1, W2, b2)
+			pYbatch, Z = forward(Xbatch, W1, b1, W2, b2, use_rectifier=False)
 
 			# updates
 			dW2 = mu * dW2 - lr * (derivative_w2(Z, Ybatch, pYbatch) + reg * W2)
 			W2 += dW2
 			db2 = mu * db2 - lr * (derivative_b2(Ybatch, pYbatch) + reg * b2)
 			b2 += db2
-			dW1 = mu * dW1 - lr * (derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2) + reg * W1)
+			dW1 = mu * dW1 - lr * (derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2, use_rectifier=False) + reg * W1)
 			W1 += dW1
-			db1 = mu * db1 - lr * (derivative_b1(Z, Ybatch, pYbatch, W2) + reg * b1)
+			db1 = mu * db1 - lr * (derivative_b1(Z, Ybatch, pYbatch, W2, use_rectifier=False) + reg * b1)
 			b1 += db1
 
 			if j % print_period == 0:
 				# calculate just for LL
-				pY, _ = forward(Xtest, W1, b1, W2, b2)
+				pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 				# print "pY:", pY
 				ll = cost(pY, Ytest_ind)
 				LL_momentum.append(ll)
-				print
-				"Cost at iteration i=%d, j=%d: %.6f" % (i, j, ll)
+				print("Cost at iteration i=%d, j=%d: %.6f" % (i, j, ll))
 
 				err = error_rate(pY, Ytest)
 				CR_momentum.append(err)
-				print
-				"Error rate:", err
-	pY, _ = forward(Xtest, W1, b1, W2, b2)
+				print("Error rate:", err)
+	pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 	print("Final error rate:", error_rate(pY, Ytest))
 
 	# 3. batch with Nesterov momentum
@@ -135,21 +133,21 @@ def main():
 			Xbatch = Xtrain[j * batch_sz:(j * batch_sz + batch_sz), ]
 			Ybatch = Ytrain_ind[j * batch_sz:(j * batch_sz + batch_sz), ]
 			# pYbatch, Z = forward(Xbatch, W1, b1, W2, b2)
-			pYbatch, Z = forward(Xbatch, W1_tmp, b1_tmp, W2_tmp, b2_tmp)
+			pYbatch, Z = forward(Xbatch, W1_tmp, b1_tmp, W2_tmp, b2_tmp, use_rectifier=False)
 
 			# updates
 			vW2 = mu * vW2 + derivative_w2(Z, Ybatch, pYbatch) + reg * W2_tmp
 			W2 -= lr * vW2
 			vb2 = mu * vb2 + derivative_b2(Ybatch, pYbatch) + reg * b2_tmp
 			b2 -= lr * vb2
-			vW1 = mu * vW1 + derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2_tmp) + reg * W1_tmp
+			vW1 = mu * vW1 + derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2_tmp, use_rectifier=False) + reg * W1_tmp
 			W1 -= lr * vW1
-			vb1 = mu * vb1 + derivative_b1(Z, Ybatch, pYbatch, W2_tmp) + reg * b1_tmp
+			vb1 = mu * vb1 + derivative_b1(Z, Ybatch, pYbatch, W2_tmp, use_rectifier=False) + reg * b1_tmp
 			b1 -= lr * vb1
 
 			if j % print_period == 0:
 				# calculate just for LL
-				pY, _ = forward(Xtest, W1, b1, W2, b2)
+				pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 				# print "pY:", pY
 				ll = cost(pY, Ytest_ind)
 				LL_nest.append(ll)
@@ -158,7 +156,7 @@ def main():
 				err = error_rate(pY, Ytest)
 				CR_nest.append(err)
 				print("Error rate:", err)
-	pY, _ = forward(Xtest, W1, b1, W2, b2)
+	pY, _ = forward(Xtest, W1, b1, W2, b2, use_rectifier=False)
 	print("Final error rate:", error_rate(pY, Ytest))
 
 	plt.plot(LL_batch, label="batch")
