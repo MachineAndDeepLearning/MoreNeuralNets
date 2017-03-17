@@ -114,7 +114,7 @@ class ANN(object):
 def main():
 	X, Y = FaceRecognizer().getData()
 
-	model = ANN([2000, 1000])
+	model = ANN([2000, 1000, 500])
 	model.fit(X, Y, show_fig=True)
 	print(model.score(X, Y))
 

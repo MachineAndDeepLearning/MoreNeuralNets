@@ -186,8 +186,8 @@ def gradb(t, y):
 
 def y2indicator(y):
 	N = len(y)
-	y = y.astype(np.int32)
-	ind = np.zeros((N, 10))
+	K = len(set(y))
+	ind = np.zeros((N, K))
 	for i in range(N):
 		ind[i, y[i]] = 1
 	return ind
