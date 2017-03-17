@@ -30,7 +30,7 @@ class MNIST(object):
 	def get_normalized_data(self, load_train=True, up_one_level=True):
 		print("Reading in and transforming data...")
 
-		df = pd.read_csv(self.get_file_path(load_train,up_one_level))
+		df = pd.read_csv(self.get_file_path(load_train, up_one_level))
 		data = df.as_matrix().astype(np.float32)
 		np.random.shuffle(data)
 		X = data[:, 1:]
@@ -48,6 +48,87 @@ class MNIST(object):
 		if load_train:
 			return pre + 'Data/MNIST/train.csv'
 		return pre + 'Data/MNIST/test.csv'
+
+
+class FaceRecognizer(object):
+	def __init__(self):
+		self.label_map = ['Anger', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+
+	def getData(self, balance_ones=True):
+		# images are 48x48 = 2304 size vectors
+		# N = 35887
+		X = []
+		Y = []
+		first = True
+
+		for line in open('../Data/fer2013/fer2013.csv'):
+			if first:
+				first = False
+			else:
+				row = line.split(',')
+				Y.append(int(row[0]))
+				X.append([int(p) for p in row[1].split()])
+
+		X, Y = np.array(X) / 255.0, np.array(Y)
+
+		if balance_ones:
+			# balance the 1 class
+			X0, Y0 = X[Y != 1, :], Y[Y != 1]
+			X1 = X[Y == 1, :]
+			X1 = np.repeat(X1, 9, axis=0)
+			X = np.vstack([X0, X1])
+			Y = np.concatenate((Y0, [1] * len(X1)))
+
+		return X, Y
+
+	def getImageData(self):
+		X, Y = self.getData()
+		N, D = X.shape
+		d = int(np.sqrt(D))
+		X = X.rehape(N, 1, d, d)
+
+		return X, Y
+
+	def getBinaryData(self):
+		X = []
+		Y = []
+		first = True
+		for line in open('../Data/fer2013/fer2013.csv'):
+			if first:
+				first = False
+			else:
+				row = line.split(',')
+				y = int(row[0])
+				if y == 0 or y == 1:
+					Y.append(y)
+					X.append([int(p) for p in row[1].split()])
+		return np.array(X) / 255.0, np.array(Y)
+
+	def showImages(self, balance_ones=True):
+		X, Y = self.getData(balance_ones=balance_ones)
+
+		while True:
+			for i in range(7):
+				x, y = X[Y == i], Y[Y == i]
+				N = len(y)
+				j = np.random.choice(N)
+
+				plt.imshow(x[j].reshape(48, 48), cmap='gray')
+				plt.title(self.label_map[y[j]])
+				plt.show()
+			prompt = input('Quit? Enter Y:\n')
+			if prompt == 'Y':
+				break;
+
+
+def init_weight_and_biases(M1, M2):
+	W = np.random.randn(M1, M2) / np.sqrt(M1 + M2)
+	b = np.zeros(M2)
+	return W.astype(np.float32), b.astype(np.float32)
+
+
+def relu(x):
+	return x * (x > 0)
 
 
 def plot_cumulative_variance(pca):
@@ -101,7 +182,6 @@ def gradW(t, y, X):
 
 def gradb(t, y):
 	return (t - y).sum(axis=0)
-
 
 
 def y2indicator(y):
